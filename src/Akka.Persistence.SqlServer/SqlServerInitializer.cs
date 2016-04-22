@@ -9,14 +9,17 @@ namespace Akka.Persistence.SqlServer
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{2}' AND TABLE_NAME = '{3}')
             BEGIN
                 CREATE TABLE {0}.{1} (
-	                PersistenceID NVARCHAR(255) NOT NULL,
-	                SequenceNr BIGINT NOT NULL,
+                    GlobalSequenceNr BIGINT IDENTITY NOT NULL,
+                    PersistenceID NVARCHAR(255) NOT NULL,
+                    SequenceNr BIGINT NOT NULL,
                     Timestamp DATETIME2 NOT NULL,
                     IsDeleted BIT NOT NULL,
                     Manifest NVARCHAR(500) NOT NULL,
-	                Payload VARBINARY(MAX) NOT NULL
-                    CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
+                    Payload VARBINARY(MAX) NOT NULL,
+                    CONSTRAINT PK_{3} PRIMARY KEY (GlobalSequenceNr),
+                    CONSTRAINT U_{3} UNIQUE (PersistenceID, SequenceNr)
                 );
+                CREATE INDEX IX_{3}_GlobalSequenceNr ON {0}.{1}(GlobalSequenceNr);
                 CREATE INDEX IX_{3}_SequenceNr ON {0}.{1}(SequenceNr);
                 CREATE INDEX IX_{3}_Timestamp ON {0}.{1}(Timestamp);
             END
@@ -26,11 +29,11 @@ namespace Akka.Persistence.SqlServer
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{2}' AND TABLE_NAME = '{3}')
             BEGIN
                 CREATE TABLE {0}.{1} (
-	                PersistenceID NVARCHAR(255) NOT NULL,
-	                SequenceNr BIGINT NOT NULL,
+                    PersistenceID NVARCHAR(255) NOT NULL,
+                    SequenceNr BIGINT NOT NULL,
                     Timestamp DATETIME2 NOT NULL,
                     Manifest NVARCHAR(500) NOT NULL,
-	                Snapshot VARBINARY(MAX) NOT NULL
+                    Snapshot VARBINARY(MAX) NOT NULL
                     CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
                 );
                 CREATE INDEX IX_{3}_SequenceNr ON {0}.{1}(SequenceNr);
@@ -42,8 +45,8 @@ namespace Akka.Persistence.SqlServer
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{2}' AND TABLE_NAME = '{3}')
             BEGIN
                 CREATE TABLE {0}.{1} (
-	                PersistenceID NVARCHAR(255) NOT NULL,
-	                SequenceNr BIGINT NOT NULL,
+                    PersistenceID NVARCHAR(255) NOT NULL,
+                    SequenceNr BIGINT NOT NULL,
                     CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
                 );
             END
@@ -81,7 +84,7 @@ namespace Akka.Persistence.SqlServer
 
         private static string InitJournalSql(string tableName, string schemaName = null)
         {
-            if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException("tableName", "Akka.Persistence.SqlServer journal table name is required");
+            if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException(nameof(tableName), "Akka.Persistence.SqlServer journal table name is required");
             schemaName = schemaName ?? "dbo";
 
             var cb = new SqlCommandBuilder();
@@ -90,7 +93,7 @@ namespace Akka.Persistence.SqlServer
 
         private static string InitSnapshotStoreSql(string tableName, string schemaName = null)
         {
-            if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException("tableName", "Akka.Persistence.SqlServer snapshot store table name is required");
+            if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException(nameof(tableName), "Akka.Persistence.SqlServer snapshot store table name is required");
             schemaName = schemaName ?? "dbo";
 
             var cb = new SqlCommandBuilder();
@@ -99,7 +102,7 @@ namespace Akka.Persistence.SqlServer
 
         private static string InitMetadataSql(string metadataTable, string schemaName)
         {
-            if (string.IsNullOrEmpty(metadataTable)) throw new ArgumentNullException("metadataTable", "Akka.Persistence.SqlServer metadata table name is required");
+            if (string.IsNullOrEmpty(metadataTable)) throw new ArgumentNullException(nameof(metadataTable), "Akka.Persistence.SqlServer metadata table name is required");
             schemaName = schemaName ?? "dbo";
 
             var cb = new SqlCommandBuilder();

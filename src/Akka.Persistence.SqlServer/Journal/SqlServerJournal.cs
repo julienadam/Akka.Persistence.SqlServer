@@ -21,9 +21,10 @@ namespace Akka.Persistence.SqlServer.Journal
             SqlServerJournalSettings = new SqlServerJournalSettings(system.Settings.Config.GetConfig(SqlServerJournalSettings.ConfigPath));
 
             QueryBuilder = new SqlServerJournalQueryBuilder(Settings.TableName, Settings.SchemaName, SqlServerJournalSettings.MetadataTableName);
+            QueryMapper = new SqlServerJournalQueryMapper(system.Serialization);
         }
 
-        protected override string JournalConfigPath { get { return SqlServerJournalSettings.ConfigPath; } }
+        protected override string JournalConfigPath => SqlServerJournalSettings.ConfigPath;
 
         protected override DbConnection CreateDbConnection(string connectionString)
         {

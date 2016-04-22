@@ -45,7 +45,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 .Where(x => !string.IsNullOrEmpty(x));
 
             var where = string.Join(" AND ", sqlized);
-            var sql = new StringBuilder("SELECT PersistenceID, SequenceNr, IsDeleted, Manifest, Payload, Timestamp FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
+            var sql = new StringBuilder("SELECT PersistenceID, SequenceNr, IsDeleted, Manifest, Payload, Timestamp, GlobalSequenceNr FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
             if (!string.IsNullOrEmpty(where))
             {
                 sql.Append(" WHERE ").Append(where);
@@ -97,7 +97,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 command.Parameters.AddWithValue("@Manifest", manifest.Manifest);
                 return " manifest = @Manifest";
             }
-            else throw new NotSupportedException(string.Format("SqlServer journal doesn't support query with hint [{0}]", hint.GetType()));
+            else throw new NotSupportedException($"SqlServer journal doesn't support query with hint [{hint.GetType()}]");
         }
 
         public DbCommand SelectMessages(string persistenceId, long fromSequenceNr, long toSequenceNr, long max)
