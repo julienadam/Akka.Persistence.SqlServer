@@ -97,7 +97,16 @@ namespace Akka.Persistence.SqlServer.Journal
                 command.Parameters.AddWithValue("@Manifest", manifest.Manifest);
                 return " manifest = @Manifest";
             }
-            else throw new NotSupportedException($"SqlServer journal doesn't support query with hint [{hint.GetType()}]");
+            else if (hint is FromGlobalSequenceNumberHint)
+            {
+                var fromGlobalSequenceNumberHint = (FromGlobalSequenceNumberHint) hint;
+                command.Parameters.AddWithValue("@GlobalSequenceNr", fromGlobalSequenceNumberHint.GlobalSequenceNr);
+                return " globalSequenceNr > @GlobalSequenceNr";
+            }
+            else
+            {
+                throw new NotSupportedException($"SqlServer journal doesn't support query with hint [{hint.GetType()}]");
+            }
         }
 
         public DbCommand SelectMessages(string persistenceId, long fromSequenceNr, long toSequenceNr, long max)
