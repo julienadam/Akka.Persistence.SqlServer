@@ -171,7 +171,8 @@ namespace Akka.Persistence.SqlServer.Journal
                     IsDeleted,
                     Manifest,
                     Payload,
-                    Timestamp ", max != long.MaxValue ? "TOP " + max : string.Empty)
+                    Timestamp,
+                    GlobalSequenceNr", max != long.MaxValue ? "TOP " + max : string.Empty)
                 .Append(" FROM {0}.{1} WHERE PersistenceId = @PersistenceId".QuoteSchemaAndTable(_schemaName, _tableName));
 
             // since we guarantee type of fromSequenceNr, toSequenceNr and max
